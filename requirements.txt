@@ -1,0 +1,7 @@
+Django>=4.2
+pymongo
+dnspython
+google-genai
+gunicorn
+python-dotenv
+whitenoise
