@@ -26,7 +26,9 @@ def get_candidates(user_query: str, limit: int = 30):
         product_collection.find().sort("popularity", -1).limit(200)
     )
 
-    def score(p) -> float:
+    scored = []
+
+    for p in products:
         tags = p.get("tags", [])
         name = p.get("name", "")
         popularity = p.get("popularity", 0)
@@ -39,7 +41,12 @@ def get_candidates(user_query: str, limit: int = 30):
             1 for w in tokenize(name) if w in tokens
         )
 
-        return (popularity * 0.05) + (tag_overlap * 2) + (name_overlap * 1)
+        score = (popularity * 0.05) + (tag_overlap * 2) + (name_overlap * 1)
 
-    ranked = sorted(products, key=score, reverse=True)
-    return ranked[:limit]
+        if score > 0:
+            scored.append((p, score))
+
+    ranked = sorted(scored, key=lambda x: x[1], reverse=True)
+
+
+    return [p for p, _ in ranked[:limit]]

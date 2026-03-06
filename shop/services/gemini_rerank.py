@@ -34,6 +34,7 @@ Do NOT wrap the JSON in markdown.
 Do NOT include explanations.
 Always return at least one product if candidates exist.
 Keep reasons short (1 sentence each).
+In a scenario that item does not exist, output "NotExist"
 """
 
     resp = client.models.generate_content(model=MODEL, contents=prompt)
@@ -54,6 +55,9 @@ Keep reasons short (1 sentence each).
 
     ranked_ids = data.get("ranked_product_ids", [])
     reasons = data.get("reasons", {})
+    
+    if ranked_ids == "NotExist" or ranked_ids == ["NotExist"]:
+        return "NotExist", {}
 
     return ranked_ids, reasons
 
@@ -82,6 +86,9 @@ def recommend_products(user_query: str, top_k: int = 8):
 
     try:
         ranked_ids, reasons = rerank_with_gemini(user_query, payload, top_k=top_k)
+
+        if ranked_ids == "NotExist":
+            return [], "ITEM_NOT_FOUND"
 
         results = [
             (id_to_product[pid], reasons.get(str(pid)) or reasons.get(pid))
